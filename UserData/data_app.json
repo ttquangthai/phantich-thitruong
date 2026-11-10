@@ -1,0 +1,10 @@
+{
+  "passwords": {
+    "login": "admin",
+    "write": "admin",
+    "delete": "admin"
+  },
+  "t1": [],
+  "t2": [],
+  "t3": []
+}

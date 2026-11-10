@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hệ Thống Quản Lý Kỹ Thuật & Mạng Lưới Cấp Nước</title>
+  
+  <!-- Font & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Leaflet Map CSS (Bản đồ vệ tinh/giao thông) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Header & Navigation Bar */
+    header { background: #0f172a; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); }
+    .header-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-user { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+    .btn-sm { padding: 6px 12px; font-size: 0.82rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid #475569; color: #cbd5e1; }
+    .btn-outline:hover { background: #1e293b; color: #fff; }
+
+    /* Tabs Bar */
+    .tabs-bar { display: flex; background: #1e293b; overflow-x: auto; border-bottom: 1px solid #334155; }
+    .tab-btn { flex: 1; min-width: 150px; padding: 12px 16px; background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; border-bottom: 3px solid transparent; }
+    .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: #0f172a; }
+
+    /* Content Area */
+    .container { flex: 1; padding: 16px; max-width: 1400px; margin: 0 auto; width: 100%; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Control Toolbar (Search, Filter, Actions) */
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; background: var(--surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+    .search-input { flex: 1; min-width: 220px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .filter-select { padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; background: #fff; }
+
+    /* =========================================================
+       BẢNG PHỐI MÀU 5 MÀU VÀ ĐỊNH DẠNG Ô CỐ ĐỊNH CHỐNG GIẬT CỘT
+       ========================================================= */
+    .table-container { 
+      background: var(--surface); 
+      border: 2px solid #0284c7; /* Viền bao ngoài xanh biển */
+      border-radius: 8px; 
+      overflow-x: auto; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+    }
+
+    table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 0;
+      table-layout: fixed; /* CỐ ĐỊNH KÍCH THƯỚC Ô: Không bị co giãn khi gõ tìm kiếm */
+      font-size: 0.88rem; 
+      min-width: 1100px; /* Đảm bảo đủ độ rộng hiển thị 1 hàng */
+    }
+
+    /* 1. Thanh tiêu đề màu Xanh biển đậm (Màu 1) */
+    th { 
+      background: #0284c7; 
+      color: #ffffff; 
+      padding: 11px 12px; 
+      font-weight: 700; 
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      letter-spacing: 0.5px;
+      border-right: 1px solid #38bdf8;
+      border-bottom: 2px solid #0369a1;
+      white-space: nowrap; /* Giữ chữ trên 1 hàng duy nhất */
+    }
+    th:last-child { border-right: none; }
+
+    /* Kẻ viền từng ô chi tiết như Excel (Màu 5) */
+    td { 
+      padding: 9px 12px; 
+      border-right: 1px solid #cbd5e1; /* Viền dọc ngăn các ô */
+      border-bottom: 1px solid #cbd5e1; /* Viền ngang */
+      vertical-align: middle; 
+      white-space: nowrap; /* BẮT BUỘC: Giữ chữ chỉ trên 1 hàng */
+      overflow: hidden; /* Cắt phần chữ tràn */
+      text-overflow: ellipsis; /* Hiện dấu ... nếu chữ quá dài */
+      background-color: #ffffff;
+    }
+    td:last-child { border-right: none; }
+
+    /* Hàng xen kẽ màu để dễ nhìn dòng */
+    tr:nth-child(even) td { background-color: #f8fafc; }
+    tr:hover td { background-color: #f0f9ff; } /* Rê chuột sáng màu xanh nhạt */
+
+    /* Ô Thứ & Ngày: Nền Xanh biển nhạt (Màu 2) */
+    .cell-date {
+      background-color: #f0f9ff !important;
+      color: #0369a1;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Các nhãn phân màu (Badges) */
+    .badge { 
+      display: inline-block; 
+      padding: 4px 10px; 
+      border-radius: 4px; 
+      font-size: 0.78rem; 
+      font-weight: 700; 
+      white-space: nowrap;
+    }
+    /* Màu 3: Xanh lá cây (Hoàn thành) */
+    .badge-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    /* Màu 4: Vàng hổ phách (Chưa hoàn thành) */
+    .badge-warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    /* Màu 2: Xanh mòng két nhạt (Đơn vị / Loại thiết bị) */
+    .badge-info { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+
+    /* Modal Form / Popup */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 12px; }
+    .modal-box { background: var(--surface); border-radius: 8px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-header { padding: 14px 16px; background: #0f172a; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .modal-footer { padding: 12px 16px; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* Form Fields */
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 0.82rem; font-weight: 600; color: #475569; }
+    .form-control { padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+
+    /* Map Styles */
+    #mapContainer { height: 380px; width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
+
+    /* Preview Iframe / Image */
+    #previewFrame { width: 100%; height: 75vh; border: none; }
+    #previewImage { max-width: 100%; max-height: 75vh; display: block; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-title">
+      <i class="fa-solid fa-water"></i>
+      <span>QUẢN LÝ NHẬT KÝ, CÔNG VĂN, THIẾT BỊ TRÊN MẠNG LƯỚI</span>
+    </div>
+    <div class="header-user" id="userSection">
+      <span id="userNameTxt"><i class="fa-regular fa-user"></i> Khách</span>
+      <button class="btn-sm btn-primary" id="loginBtn" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</button>
+      <button class="btn-sm btn-outline" id="passBtn" onclick="openChangePassModal()" style="display:none;"><i class="fa-solid fa-key"></i> Đổi Pass</button>
+      <button class="btn-sm btn-danger" id="logoutBtn" onclick="logout()" style="display:none;"><i class="fa-solid fa-power-off"></i></button>
+    </div>
+  </header>
+
+  <!-- Thanh chọn Tab -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab(1)"><i class="fa-solid fa-book-journal-whills"></i> 1. Nhật Ký Công Tác</button>
+    <button class="tab-btn" onclick="switchTab(2)"><i class="fa-solid fa-folder-open"></i> 2. Quản Lý Công Văn</button>
+    <button class="tab-btn" onclick="switchTab(3)"><i class="fa-solid fa-map-location-dot"></i> 3. Thiết bị trên mạng lưới</button>
+  </div>
+
+  <div class="container">
+    
+    <!-- ==================== TAB 1: NHẬT KÝ CÔNG TÁC ==================== -->
+    <div id="tab1" class="tab-content active">
+      <div class="toolbar">
+        <input type="text" id="t1Search" class="search-input" placeholder="Tìm theo nội dung, đơn vị, ghi chú..." oninput="renderTab1()">
+        <select id="t1FilterStatus" class="filter-select" onchange="renderTab1()">
+          <option value="">-- Tất cả trạng thái --</option>
+          <option value="Hoàn thành">Hoàn thành</option>
+          <option value="Chưa hoàn thành">Chưa hoàn thành</option>
+        </select>
+        <button class="btn-sm btn-primary" onclick="openAddT1Modal()"><i class="fa-solid fa-plus"></i> Ghi Nhật Ký</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55px; text-align: center;">STT</th>
+              <th style="width: 85px; text-align: center;">Tuần</th>
+              <th style="width: 175px; text-align: center;">Thứ & Ngày</th>
+              <th style="width: 320px;">Nội Dung Công Tác</th>
+              <th style="width: 150px; text-align: center;">Đơn Vị Thực Hiện</th>
+              <th style="width: 145px; text-align: center;">Trạng Thái</th>
+              <th style="width: 180px;">Ghi Chú</th>
+              <th style="width: 75px; text-align: center;">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="t1TableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: QUẢN LÝ CÔNG VĂN ==================== -->
+    <div id="tab2" class="tab-content">
+      <div class="toolbar">
+        <input type="text" id="t2Search" class="search-input" placeholder="Tìm số hiệu, trích yếu, cơ quan ban hành..." oninput="renderTab2()">
+        <select id="t2FilterType" class="filter-select" onchange="renderTab2()">
+          <option value="">-- Tất cả loại văn bản --</option>
+          <option value="Công văn đến">Công văn đến</option>
+          <option value="Công văn đi">Công văn đi</option>
+          <option value="Tờ trình / Báo cáo">Tờ trình / Báo cáo</option>
+        </select>
+        <button class="btn-sm btn-primary" onclick="openAddT2Modal()"><i class="fa-solid fa-file-circle-plus"></i> Thêm Công Văn</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55px; text-align: center;">STT</th>
+              <th style="width: 120px;">Số Hiệu</th>
+              <th style="width: 110px; text-align: center;">Ngày Ban Hành</th>
+              <th style="width: 140px; text-align: center;">Loại Văn Bản</th>
+              <th style="width: 340px;">Trích Yếu Nội Dung</th>
+              <th style="width: 170px;">Cơ Quan Ban Hành</th>
+              <th style="width: 150px; text-align: center;">Xem & Tải Về</th>
+              <th style="width: 70px; text-align: center;">Xóa</th>
+            </tr>
+          </thead>
+          <tbody id="t2TableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: MẠNG LƯỚI VAN & THIẾT BỊ ==================== -->
+    <div id="tab3" class="tab-content">
+      <div class="toolbar">
+        <input type="text" id="t3Search" class="search-input" placeholder="Tìm mã số, loại thiết bị, tuyến đường..." oninput="renderTab3()">
+        <select id="t3FilterCategory" class="filter-select" onchange="renderTab3()">
+          <option value="">-- Tất cả thiết bị --</option>
+          <option value="Van chặn">Van chặn</option>
+          <option value="Van xả cặn">Van xả cặn</option>
+          <option value="Đồng hồ tổng">Đồng hồ tổng</option>
+          <option value="Tuyến ống chính">Tuyến ống chính</option>
+        </select>
+        <button class="btn-sm btn-primary" onclick="openAddT3Modal()"><i class="fa-solid fa-location-plus"></i> Thêm Điểm Thiết Bị</button>
+      </div>
+
+      <!-- Bản đồ số vị trí mạng lưới -->
+      <div id="mapContainer"></div>
+
+      <div class="table-container" style="margin-top: 14px;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55px; text-align: center;">STT</th>
+              <th style="width: 110px; text-align: center;">Mã Thiết Bị</th>
+              <th style="width: 130px; text-align: center;">Loại</th>
+              <th style="width: 90px; text-align: center;">Cỡ (DN)</th>
+              <th style="width: 250px;">Vị Trí / Tuyến Đường</th>
+              <th style="width: 110px; text-align: center;">Lắp Mới</th>
+              <th style="width: 120px; text-align: center;">Sửa Chữa</th>
+              <th style="width: 150px;">Tình Trạng</th>
+              <th style="width: 100px; text-align: center;">Bản Đồ</th>
+              <th style="width: 70px; text-align: center;">Xóa</th>
+            </tr>
+          </thead>
+          <tbody id="t3TableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== MODAL: ĐĂNG NHẬP ==================== -->
+  <div class="modal-backdrop" id="loginModal">
+    <div class="modal-box" style="max-width: 360px;">
+      <div class="modal-header">
+        <span><i class="fa-solid fa-lock"></i> Đăng Nhập Hệ Thống</span>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('loginModal')"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Tài khoản:</label>
+          <input type="text" id="loginUser" class="form-control" value="admin">
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu:</label>
+          <input type="password" id="loginPass" class="form-control" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm btn-outline" onclick="closeModal('loginModal')">Đóng</button>
+        <button class="btn-sm btn-primary" onclick="submitLogin()">Xác Nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ĐỔI MẬT KHẨU ==================== -->
+  <div class="modal-backdrop" id="changePassModal">
+    <div class="modal-box" style="max-width: 400px;">
+      <div class="modal-header">
+        <span><i class="fa-solid fa-key"></i> Đổi Mật Khẩu Hệ Thống</span>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('changePassModal')"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Chọn loại mật khẩu cần đổi:</label>
+          <select id="passTarget" class="form-control">
+            <option value="login">Mật khẩu Đăng Nhập</option>
+            <option value="write">Mật khẩu Quyền Ghi (Thêm/Sửa)</option>
+            <option value="delete">Mật khẩu Quyền Xóa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu cũ (hoặc mã khẩn cấp ddmmyy):</label>
+          <input type="password" id="oldPass" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu mới:</label>
+          <input type="password" id="newPass" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm btn-outline" onclick="closeModal('changePassModal')">Đóng</button>
+        <button class="btn-sm btn-primary" onclick="submitChangePass()">Lưu Thay Đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: THÊM NHẬT KÝ (TAB 1) ==================== -->
+  <div class="modal-backdrop" id="addT1Modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span><i class="fa-solid fa-pen-to-square"></i> Thêm Nhật Ký Công Tác</span>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('addT1Modal')"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Chọn ngày làm việc:</label>
+          <input type="date" id="t1Date" class="form-control" onchange="autoCalcWeekAndDay()">
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label>Tuần trong năm:</label>
+            <input type="text" id="t1Week" class="form-control" readonly style="background:#f1f5f9;">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>Thứ:</label>
+            <input type="text" id="t1DayOfWeek" class="form-control" readonly style="background:#f1f5f9;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nội dung công tác:</label>
+          <textarea id="t1Content" class="form-control" rows="3" placeholder="Nhập chi tiết nhiệm vụ thi công, bảo trì, kiểm tra..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Đơn vị thực hiện:</label>
+          <input type="text" id="t1Unit" class="form-control" placeholder="Tổ máy / Trạm bơm / Phòng Kỹ thuật">
+        </div>
+        <div class="form-group">
+          <label>Trạng thái:</label>
+          <select id="t1Status" class="form-control">
+            <option value="Hoàn thành">Hoàn thành</option>
+            <option value="Chưa hoàn thành">Chưa hoàn thành</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ghi chú:</label>
+          <input type="text" id="t1Note" class="form-control" placeholder="Nguyên nhân tồn đọng hoặc lưu ý...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm btn-outline" onclick="closeModal('addT1Modal')">Hủy</button>
+        <button class="btn-sm btn-primary" onclick="saveT1()">Lưu Dữ Liệu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: THÊM CÔNG VĂN (TAB 2) ==================== -->
+  <div class="modal-backdrop" id="addT2Modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span><i class="fa-solid fa-file-circle-plus"></i> Thêm Công Văn & Tài Liệu</span>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('addT2Modal')"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Số hiệu văn bản:</label>
+          <input type="text" id="t2Number" class="form-control" placeholder="VD: 125/CV-CTN">
+        </div>
+        <div class="form-group">
+          <label>Ngày ban hành:</label>
+          <input type="date" id="t2Date" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Loại văn bản:</label>
+          <select id="t2Type" class="form-control">
+            <option value="Công văn đến">Công văn đến</option>
+            <option value="Công văn đi">Công văn đi</option>
+            <option value="Tờ trình / Báo cáo">Tờ trình / Báo cáo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Trích yếu nội dung:</label>
+          <textarea id="t2Summary" class="form-control" rows="2" placeholder="Tóm tắt nội dung văn bản..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Cơ quan ban hành / Nơi gửi:</label>
+          <input type="text" id="t2Issuer" class="form-control" placeholder="UBND / Sở Xây Dựng / Công ty...">
+        </div>
+        <div class="form-group">
+          <label>Tệp tin đính kèm (PDF, Word, Excel, Hình ảnh):</label>
+          <input type="file" id="t2File" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm btn-outline" onclick="closeModal('addT2Modal')">Hủy</button>
+        <button class="btn-sm btn-primary" onclick="saveT2()">Lưu Công Văn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: THÊM THIẾT BỊ MẠNG LƯỚI (TAB 3) ==================== -->
+  <div class="modal-backdrop" id="addT3Modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span><i class="fa-solid fa-map-pin"></i> Thêm Thiết Bị Mạng Lưới</span>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('addT3Modal')"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Mã hiệu thiết bị:</label>
+          <input type="text" id="t3Code" class="form-control" placeholder="VD: V-300-01">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>Loại thiết bị:</label>
+            <select id="t3Category" class="form-control">
+              <option value="Van chặn">Van chặn</option>
+              <option value="Van xả cặn">Van xả cặn</option>
+              <option value="Đồng hồ tổng">Đồng hồ tổng</option>
+              <option value="Tuyến ống chính">Tuyến ống chính</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Đường kính (DN):</label>
+            <input type="text" id="t3Size" class="form-control" placeholder="VD: D100, D300">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Vị trí lắp đặt / Tuyến đường:</label>
+          <input type="text" id="t3Location" class="form-control" placeholder="Giao lộ Nguyễn Văn Cừ - 3/2...">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>Ngày lắp mới:</label>
+            <input type="date" id="t3DateInstall" class="form-control">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Ngày sửa chữa gần nhất:</label>
+            <input type="date" id="t3DateRepair" class="form-control">
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>Kinh độ (Lng):</label>
+            <input type="number" step="0.000001" id="t3Lng" class="form-control" placeholder="105.77...">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Vĩ độ (Lat):</label>
+            <input type="number" step="0.000001" id="t3Lat" class="form-control" placeholder="10.03...">
+          </div>
+        </div>
+        <small style="color:var(--primary);"><i class="fa-solid fa-circle-info"></i> Học viên có thể click chuột trực tiếp lên bản đồ để lấy tọa độ tự động.</small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm btn-outline" onclick="closeModal('addT3Modal')">Hủy</button>
+        <button class="btn-sm btn-primary" onclick="saveT3()">Lưu Thiết Bị</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: XEM TRƯỚC TÀI LIỆU ==================== -->
+  <div class="modal-backdrop" id="previewModal">
+    <div class="modal-box" style="max-width: 900px;">
+      <div class="modal-header">
+        <span id="previewTitle"><i class="fa-solid fa-eye"></i> Xem Trước Văn Bản</span>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('previewModal')"></i>
+      </div>
+      <div class="modal-body" style="padding:0; background:#334155;">
+        <iframe id="previewFrame" style="display:none;"></iframe>
+        <img id="previewImage" style="display:none;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    /* =====================================================================
+       1. BẢO MẬT: MẬT KHẨU MẶC ĐỊNH & MÃ KHẨN CẤP (DDMMYY)
+       ===================================================================== */
+    const PASS_KEYS = {
+      LOGIN: 'pwd_login',
+      WRITE: 'pwd_write',
+      DELETE: 'pwd_delete'
+    };
+
+    function initPass() {
+      if(!localStorage.getItem(PASS_KEYS.LOGIN)) localStorage.setItem(PASS_KEYS.LOGIN, 'admin');
+      if(!localStorage.getItem(PASS_KEYS.WRITE)) localStorage.setItem(PASS_KEYS.WRITE, 'admin');
+      if(!localStorage.getItem(PASS_KEYS.DELETE)) localStorage.setItem(PASS_KEYS.DELETE, 'admin');
+    }
+    initPass();
+
+    // Sinh mã ngày hiện tại ddmmyy (VD: 03/11/2026 -> 031126)
+    function getEmergencyCode() {
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const yy = String(now.getFullYear()).slice(-2);
+      return `${dd}${mm}${yy}`;
+    }
+
+    function verifyPass(type, inputPass) {
+      if (!inputPass) return false;
+      const truePass = localStorage.getItem(type) || 'admin';
+      return (inputPass === truePass || inputPass === getEmergencyCode());
+    }
+
+    let isAuth = sessionStorage.getItem('isLoggedIn') === 'true';
+
+    function updateAuthUI() {
+      const uTxt = document.getElementById('userNameTxt');
+      const lBtn = document.getElementById('loginBtn');
+      const pBtn = document.getElementById('passBtn');
+      const oBtn = document.getElementById('logoutBtn');
+
+      if (isAuth) {
+        uTxt.innerHTML = '<i class="fa-solid fa-user-check" style="color:#38bdf8;"></i> Quản Trị Viên';
+        lBtn.style.display = 'none';
+        pBtn.style.display = 'inline-flex';
+        oBtn.style.display = 'inline-flex';
+      } else {
+        uTxt.innerHTML = '<i class="fa-regular fa-user"></i> Khách Xem';
+        lBtn.style.display = 'inline-flex';
+        pBtn.style.display = 'none';
+        oBtn.style.display = 'none';
+      }
+    }
+    updateAuthUI();
+
+    function submitLogin() {
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+
+      if (u === 'admin' && verifyPass(PASS_KEYS.LOGIN, p)) {
+        isAuth = true;
+        sessionStorage.setItem('isLoggedIn', 'true');
+        closeModal('loginModal');
+        updateAuthUI();
+        alert('Đăng nhập thành công!');
+      } else {
+        alert('Tài khoản hoặc mật khẩu không chính xác!');
+      }
+    }
+
+    function logout() {
+      isAuth = false;
+      sessionStorage.removeItem('isLoggedIn');
+      updateAuthUI();
+      alert('Đã đăng xuất hệ thống!');
+    }
+
+    function submitChangePass() {
+      const target = document.getElementById('passTarget').value;
+      const oldP = document.getElementById('oldPass').value.trim();
+      const newP = document.getElementById('newPass').value.trim();
+
+      let targetKey = PASS_KEYS.LOGIN;
+      if (target === 'write') targetKey = PASS_KEYS.WRITE;
+      if (target === 'delete') targetKey = PASS_KEYS.DELETE;
+
+      if (!verifyPass(targetKey, oldP)) {
+        alert('Mật khẩu hiện tại (hoặc mã khẩn cấp) không đúng!');
+        return;
+      }
+      if (newP.length < 3) {
+        alert('Mật khẩu mới tối thiểu 3 ký tự!');
+        return;
+      }
+
+      localStorage.setItem(targetKey, newP);
+      closeModal('changePassModal');
+      alert('Đổi mật khẩu thành công!');
+    }
+
+    /* =====================================================================
+       2. ĐIỀU HƯỚNG TAB
+       ===================================================================== */
+    function switchTab(tabIndex) {
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === tabIndex);
+      });
+      document.querySelectorAll('.tab-content').forEach((tab, idx) => {
+        tab.classList.toggle('active', idx + 1 === tabIndex);
+      });
+
+      if (tabIndex === 3) {
+        setTimeout(() => { initMap(); }, 200);
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+    function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+    function openChangePassModal() { document.getElementById('changePassModal').style.display = 'flex'; }
+
+    /* =====================================================================
+       3. LOGIC TAB 1: NHẬT KÝ CÔNG TÁC
+       ===================================================================== */
+    let dataT1 = JSON.parse(localStorage.getItem('scada_t1') || '[]');
+
+    function autoCalcWeekAndDay() {
+  const dInput = document.getElementById('t1Date').value;
+  if (!dInput) return;
+  
+  // Khởi tạo ngày theo múi giờ địa phương
+  const parts = dInput.split('-');
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
+
+  // 1. Tính Thứ tiếng Việt (Chủ Nhật = 0, Thứ Hai = 1,...)
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  document.getElementById('t1DayOfWeek').value = days[date.getDay()];
+
+  // 2. Tính số tuần theo chuẩn ISO (Thứ Hai bắt đầu tuần mới)
+  const target = new Date(date.valueOf());
+  const dayNr = (date.getDay() + 6) % 7; // Thứ Hai = 0, Chủ Nhật = 6
+  target.setDate(target.getDate() - dayNr + 3); // Lấy ngày Thứ Năm của tuần đó
+  
+  const firstThursday = target.valueOf();
+  target.setMonth(0, 1);
+  if (target.getDay() !== 4) {
+    target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+  }
+  
+  const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
+  document.getElementById('t1Week').value = `Tuần ${weekNumber}`;
+}
+
+    function openAddT1Modal() {
+      if (!isAuth) {
+        const pass = prompt('Vui lòng nhập mật khẩu Ghi:');
+        if (!verifyPass(PASS_KEYS.WRITE, pass)) { alert('Mật khẩu không chính xác!'); return; }
+      }
+      document.getElementById('addT1Modal').style.display = 'flex';
+      document.getElementById('t1Date').valueAsDate = new Date();
+      autoCalcWeekAndDay();
+    }
+
+    function saveT1() {
+      const newItem = {
+        id: Date.now(),
+        date: document.getElementById('t1Date').value,
+        week: document.getElementById('t1Week').value,
+        dayOfWeek: document.getElementById('t1DayOfWeek').value,
+        content: document.getElementById('t1Content').value.trim(),
+        unit: document.getElementById('t1Unit').value.trim(),
+        status: document.getElementById('t1Status').value,
+        note: document.getElementById('t1Note').value.trim()
+      };
+
+      if (!newItem.content) { alert('Vui lòng nhập nội dung công tác!'); return; }
+
+      dataT1.unshift(newItem);
+      localStorage.setItem('scada_t1', JSON.stringify(dataT1));
+      closeModal('addT1Modal');
+      renderTab1();
+    }
+
+    function deleteT1(id) {
+      const pass = prompt('Nhập mật khẩu quyền Xóa:');
+      if (!verifyPass(PASS_KEYS.DELETE, pass)) { alert('Sai mật khẩu xóa!'); return; }
+      dataT1 = dataT1.filter(item => item.id !== id);
+      localStorage.setItem('scada_t1', JSON.stringify(dataT1));
+      renderTab1();
+    }
+
+    function renderTab1() {
+      const s = document.getElementById('t1Search').value.toLowerCase();
+      const statusF = document.getElementById('t1FilterStatus').value;
+      const tbody = document.getElementById('t1TableBody');
+      tbody.innerHTML = '';
+
+      const filtered = dataT1.filter(d => {
+        const matchTxt = (d.content + d.unit + d.note).toLowerCase().includes(s);
+        const matchStatus = !statusF || d.status === statusF;
+        return matchTxt && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">Không tìm thấy dữ liệu phù hợp</td></tr>';
+        return;
+      }
+
+      filtered.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        const badgeClass = item.status === 'Hoàn thành' ? 'badge-success' : 'badge-warning';
+        tr.innerHTML = `
+          <td style="text-align:center; font-weight:bold; color:#64748b;">${idx + 1}</td>
+          <td style="text-align:center; font-weight:bold; color:#0284c7;">${item.week}</td>
+          <td class="cell-date" title="${item.dayOfWeek}, ${item.date}">${item.dayOfWeek} (${item.date})</td>
+          <td title="${item.content}"><b>${item.content}</b></td>
+          <td style="text-align:center;" title="${item.unit || 'Phòng KT'}"><span class="badge badge-info">${item.unit || 'Phòng KT'}</span></td>
+          <td style="text-align:center;"><span class="badge ${badgeClass}">${item.status}</span></td>
+          <td title="${item.note || ''}">${item.note || '-'}</td>
+          <td style="text-align:center;">
+            <button class="btn-sm btn-danger" onclick="deleteT1(${item.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* =====================================================================
+       4. LOGIC TAB 2: QUẢN LÝ CÔNG VĂN
+       ===================================================================== */
+    let dataT2 = JSON.parse(localStorage.getItem('scada_t2') || '[]');
+
+    function openAddT2Modal() {
+      if (!isAuth) {
+        const pass = prompt('Vui lòng nhập mật khẩu Ghi:');
+        if (!verifyPass(PASS_KEYS.WRITE, pass)) { alert('Mật khẩu không đúng!'); return; }
+      }
+      document.getElementById('addT2Modal').style.display = 'flex';
+      document.getElementById('t2Date').valueAsDate = new Date();
+    }
+
+    function saveT2() {
+      const fileInput = document.getElementById('t2File');
+      const file = fileInput.files[0];
+
+      if (!document.getElementById('t2Number').value.trim() || !document.getElementById('t2Summary').value.trim()) {
+        alert('Vui lòng nhập đầy đủ Số hiệu và Trích yếu văn bản!');
+        return;
+      }
+
+      const saveRecord = (fileUrl, fileName, fileType) => {
+        const record = {
+          id: Date.now(),
+          number: document.getElementById('t2Number').value.trim(),
+          date: document.getElementById('t2Date').value,
+          type: document.getElementById('t2Type').value,
+          summary: document.getElementById('t2Summary').value.trim(),
+          issuer: document.getElementById('t2Issuer').value.trim(),
+          fileUrl: fileUrl,
+          fileName: fileName,
+          fileType: fileType
+        };
+        dataT2.unshift(record);
+        localStorage.setItem('scada_t2', JSON.stringify(dataT2));
+        closeModal('addT2Modal');
+        renderTab2();
+      };
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          saveRecord(e.target.result, file.name, file.type);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        saveRecord(null, null, null);
+      }
+    }
+
+    function viewFile(fileUrl, fileType, fileName) {
+      if (!fileUrl) { alert('Văn bản này không có file đính kèm!'); return; }
+      const modal = document.getElementById('previewModal');
+      const frame = document.getElementById('previewFrame');
+      const img = document.getElementById('previewImage');
+      document.getElementById('previewTitle').innerHTML = `<i class="fa-solid fa-eye"></i> Xem Trước: ${fileName}`;
+
+      frame.style.display = 'none';
+      img.style.display = 'none';
+
+      if (fileType.includes('image')) {
+        img.src = fileUrl;
+        img.style.display = 'block';
+      } else if (fileType.includes('pdf')) {
+        frame.src = fileUrl;
+        frame.style.display = 'block';
+      } else {
+        // Office file (Word/Excel)
+        alert('Tệp tin định dạng Word/Excel sẽ được tải về để xem chi tiết.');
+        downloadFile(fileUrl, fileName);
+        return;
+      }
+      modal.style.display = 'flex';
+    }
+
+    function downloadFile(fileUrl, fileName) {
+      const a = document.createElement('a');
+      a.href = fileUrl;
+      a.download = fileName || 'van-ban.dat';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function deleteT2(id) {
+      const pass = prompt('Nhập mật khẩu quyền Xóa:');
+      if (!verifyPass(PASS_KEYS.DELETE, pass)) { alert('Sai mật khẩu xóa!'); return; }
+      dataT2 = dataT2.filter(item => item.id !== id);
+      localStorage.setItem('scada_t2', JSON.stringify(dataT2));
+      renderTab2();
+    }
+
+    function renderTab2() {
+      const s = document.getElementById('t2Search').value.toLowerCase();
+      const typeF = document.getElementById('t2FilterType').value;
+      const tbody = document.getElementById('t2TableBody');
+      tbody.innerHTML = '';
+
+      const filtered = dataT2.filter(d => {
+        const matchTxt = (d.number + d.summary + d.issuer).toLowerCase().includes(s);
+        const matchType = !typeF || d.type === typeF;
+        return matchTxt && matchType;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">Không có công văn nào khớp kết quả tìm kiếm</td></tr>';
+        return;
+      }
+
+      filtered.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><b>${item.number}</b></td>
+          <td>${item.date}</td>
+          <td><span class="badge badge-info">${item.type}</span></td>
+          <td>${item.summary}</td>
+          <td>${item.issuer}</td>
+          <td style="text-align:center;">
+            ${item.fileUrl ? `
+              <button class="btn-sm btn-outline" style="color:var(--primary);" onclick="viewFile('${item.fileUrl}', '${item.fileType}', '${item.fileName}')"><i class="fa-solid fa-eye"></i> Xem</button>
+              <button class="btn-sm btn-primary" onclick="downloadFile('${item.fileUrl}', '${item.fileName}')"><i class="fa-solid fa-download"></i> Tải</button>
+            ` : '<span style="color:#94a3b8;">Không có tệp</span>'}
+          </td>
+          <td style="text-align:center;">
+            <button class="btn-sm btn-danger" onclick="deleteT2(${item.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* =====================================================================
+       5. LOGIC TAB 3: MẠNG LƯỚI VAN & BẢN ĐỒ GOOGLE MAPS / LEAFLET
+       ===================================================================== */
+    let map = null;
+    let markersLayer = null;
+    let dataT3 = JSON.parse(localStorage.getItem('scada_t3') || '[]');
+
+    function initMap() {
+      if (map) { map.invalidateSize(); return; }
+
+      // Mặc định tọa độ trung tâm Cần Thơ: [10.033, 105.78]
+      map = L.map('mapContainer').setView([10.0337, 105.7836], 13);
+
+      // Nền bản đồ Google Roads / OpenStreetMap chuẩn nét
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      markersLayer = L.layerGroup().addTo(map);
+
+      // Bắt sự kiện click trên bản đồ để tự động lấy tọa độ Lat, Lng
+      map.on('click', function(e) {
+        document.getElementById('t3Lat').value = e.latlng.lat.toFixed(6);
+        document.getElementById('t3Lng').value = e.latlng.lng.toFixed(6);
+        alert(`Đã chọn tọa độ: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}. Mở cửa sổ "Thêm Thiết Bị" để lưu.`);
+      });
+
+      renderTab3();
+    }
+
+    function openAddT3Modal() {
+      if (!isAuth) {
+        const pass = prompt('Vui lòng nhập mật khẩu Ghi:');
+        if (!verifyPass(PASS_KEYS.WRITE, pass)) { alert('Mật khẩu không đúng!'); return; }
+      }
+      document.getElementById('addT3Modal').style.display = 'flex';
+      document.getElementById('t3DateInstall').valueAsDate = new Date();
+    }
+
+    function saveT3() {
+      const newItem = {
+        id: Date.now(),
+        code: document.getElementById('t3Code').value.trim(),
+        category: document.getElementById('t3Category').value,
+        size: document.getElementById('t3Size').value.trim(),
+        location: document.getElementById('t3Location').value.trim(),
+        dateInstall: document.getElementById('t3DateInstall').value,
+        dateRepair: document.getElementById('t3DateRepair').value,
+        lat: parseFloat(document.getElementById('t3Lat').value) || 10.0337,
+        lng: parseFloat(document.getElementById('t3Lng').value) || 105.7836
+      };
+
+      if (!newItem.code || !newItem.location) {
+        alert('Vui lòng nhập Mã thiết bị và Vị trí lắp đặt!');
+        return;
+      }
+
+      dataT3.unshift(newItem);
+      localStorage.setItem('scada_t3', JSON.stringify(dataT3));
+      closeModal('addT3Modal');
+      renderTab3();
+    }
+
+    function deleteT3(id) {
+      const pass = prompt('Nhập mật khẩu quyền Xóa:');
+      if (!verifyPass(PASS_KEYS.DELETE, pass)) { alert('Sai mật khẩu xóa!'); return; }
+      dataT3 = dataT3.filter(item => item.id !== id);
+      localStorage.setItem('scada_t3', JSON.stringify(dataT3));
+      renderTab3();
+    }
+
+    function flyToMarker(lat, lng) {
+      if (map) {
+        map.flyTo([lat, lng], 17, { duration: 1.5 });
+      }
+    }
+
+    function renderTab3() {
+      const s = document.getElementById('t3Search').value.toLowerCase();
+      const catF = document.getElementById('t3FilterCategory').value;
+      const tbody = document.getElementById('t3TableBody');
+      tbody.innerHTML = '';
+
+      if (markersLayer) markersLayer.clearLayers();
+
+      const filtered = dataT3.filter(d => {
+        const matchTxt = (d.code + d.location + d.category).toLowerCase().includes(s);
+        const matchCat = !catF || d.category === catF;
+        return matchTxt && matchCat;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">Không có thiết bị mạng lưới phù hợp</td></tr>';
+        return;
+      }
+
+      filtered.forEach((item, idx) => {
+        // Cắm cờ vị trí lên bản đồ
+        if (markersLayer) {
+          const marker = L.marker([item.lat, item.lng]).addTo(markersLayer);
+          marker.bindPopup(`
+            <b>${item.code} (${item.category})</b><br>
+            Cỡ: ${item.size || 'N/A'}<br>
+            Vị trí: ${item.location}<br>
+            Lắp đặt: ${item.dateInstall}
+          `);
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><b>${item.code}</b></td>
+          <td><span class="badge badge-info">${item.category}</span></td>
+          <td>${item.size || '-'}</td>
+          <td>${item.location}</td>
+          <td>${item.dateInstall}</td>
+          <td>${item.dateRepair || 'Chưa sửa chữa'}</td>
+          <td>Bình thường</td>
+          <td style="text-align:center;">
+            <button class="btn-sm btn-outline" onclick="flyToMarker(${item.lat}, ${item.lng})">
+              <i class="fa-solid fa-crosshairs"></i> Định vị
+            </button>
+          </td>
+          <td style="text-align:center;">
+            <button class="btn-sm btn-danger" onclick="deleteT3(${item.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Khởi tạo hiển thị lần đầu
+    renderTab1();
+    renderTab2();
+  </script>
+</body>
+</html>

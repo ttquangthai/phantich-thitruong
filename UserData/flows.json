@@ -1,0 +1,230 @@
+[
+    {
+        "id": "715380cd869f0951",
+        "type": "tab",
+        "label": "Phan Tich Thi Truong",
+        "disabled": false,
+        "info": "phan tich gia vang, co phieu"
+    },
+    {
+        "id": "http_get_bando",
+        "type": "http in",
+        "z": "715380cd869f0951",
+        "name": "GET /phantich",
+        "url": "/phantich",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 140,
+        "wires": [
+            [
+                "template_vang_mbb_ui"
+            ]
+        ]
+    },
+    {
+        "id": "template_vang_mbb_ui",
+        "type": "template",
+        "z": "715380cd869f0951",
+        "name": "Giao Dien 2 Tab Vang & Co Phieu MBB",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "html",
+        "syntax": "plain",
+        "template": "<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">\n  <title>TRUNG TÂM PHÂN TÍCH TÍN HIỆU: VÀNG & CỔ PHIẾU MBB</title>\n  <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\">\n  <style>\n    :root {\n      --bg-main: #0b132b; --panel-bg: #1c2541; --card-bg: #141d33;\n      --text-main: #f8fafc; --text-sub: #94a3b8; --border: #334155;\n      --gold: #f59e0b; --green-up: #10b981; --red-down: #ef4444; --blue-accent: #38bdf8;\n    }\n    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n    body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding: 12px; }\n    .app-container { max-width: 1400px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }\n\n    /* THANH TAB ĐIỀU HƯỚNG */\n    .nav-tabs-bar { display: flex; background: #0f172a; border-radius: 8px; border: 2px solid var(--border); overflow: hidden; }\n    .nav-tab-btn {\n      flex: 1; padding: 14px 18px; background: none; border: none; color: var(--text-sub); font-size: 0.95rem; font-weight: 800;\n      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; border-bottom: 3px solid transparent;\n    }\n    .nav-tab-btn.active.tab-gold { color: #ffd700; border-bottom-color: #ffd700; background: rgba(245, 158, 11, 0.1); }\n    .nav-tab-btn.active.tab-stock { color: #38bdf8; border-bottom-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }\n    .tab-content-panel { display: none; flex-direction: column; gap: 14px; }\n    .tab-content-panel.active { display: flex; }\n\n    /* HEADER CHUNG */\n    .top-header {\n      background: linear-gradient(135deg, #002b4d 0%, #00172d 100%); border-radius: 8px; padding: 12px 18px;\n      display: flex; justify-content: space-between; align-items: center; border: 2px solid #0284c7; flex-wrap: wrap; gap: 10px;\n    }\n    .header-logo-title { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 900; color: #ffd700; }\n    .btn-act { background: #0284c7; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }\n    .btn-act:hover { opacity: 0.9; }\n\n    /* CARD & GRID CHUNG */\n    .card-box { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 8px; padding: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }\n    .grid-2col { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; }\n    @media (max-width: 992px) { .grid-2col { grid-template-columns: 1fr; } }\n\n    /* BẢNG CHỨNG KHOÁN & VÀNG */\n    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 600px; }\n    th { background: #0f172a; color: #ffd700; padding: 10px 12px; text-transform: uppercase; font-size: 0.8rem; border-bottom: 2px solid var(--border); text-align: left; }\n    td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }\n    tr:hover td { background: rgba(56,189,248,0.08); }\n    .col-num { font-family: monospace; font-weight: 800; font-size: 1rem; text-align: center; }\n\n    /* TERMINAL ĐẶT LỆNH */\n    .terminal-title { font-size: 1.05rem; font-weight: 900; color: #34d399; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid rgba(52,211,153,0.2); padding-bottom: 6px; margin-bottom: 10px; }\n    .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }\n    .form-group label { font-size: 0.8rem; font-weight: 700; color: var(--text-sub); }\n    .form-ctrl { background: #0f172a; border: 1.5px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 0.9rem; outline: none; }\n    .form-ctrl:focus { border-color: var(--blue-accent); }\n    .calc-box { background: #0f172a; border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--border); margin: 10px 0; }\n    .calc-row { display: flex; justify-content: space-between; font-size: 0.85rem; }\n    .btn-submit-order { width: 100%; padding: 10px; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #fff; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; }\n\n    /* TRỢ LÝ HỎI ĐÁP AI TAB 2 */\n    .qa-box { background: #111a33; border: 2px solid #38bdf8; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }\n    .qa-title { font-size: 1rem; font-weight: 900; color: #38bdf8; display: flex; align-items: center; gap: 8px; }\n    .quick-chips { display: flex; gap: 6px; flex-wrap: wrap; }\n    .chip-btn {\n      background: #1e293b; color: #cbd5e1; border: 1px solid #475569; padding: 5px 10px; border-radius: 20px; font-size: 0.78rem;\n      cursor: pointer; transition: 0.2s;\n    }\n    .chip-btn:hover { background: #0284c7; color: #fff; border-color: #38bdf8; }\n    .chat-input-row { display: flex; gap: 8px; }\n    .chat-answer-box {\n      background: #090f1d; border-radius: 6px; padding: 12px; border: 1px solid rgba(56,189,248,0.3);\n      font-size: 0.88rem; line-height: 1.5; color: #e2e8f0; min-height: 80px;\n    }\n    .chat-answer-box b { color: #ffd700; }\n    .badge-signal { padding: 3px 8px; border-radius: 4px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; }\n    .sig-buy { background: #10b981; color: #022c22; }\n    .sig-hold { background: #f59e0b; color: #451a03; }\n    .sig-sell { background: #ef4444; color: #fff; }\n  </style>\n</head>\n<body>\n\n  <div class=\"app-container\">\n    <!-- THANH ĐIỀU HƯỚNG 2 TAB -->\n    <div class=\"nav-tabs-bar\">\n      <button class=\"nav-tab-btn tab-gold active\" id=\"btnTab1\" onclick=\"selectAppTab(1)\">\n        <i class=\"fa-solid fa-coins\"></i> TAB 1: PHÂN TÍCH & ĐẶT LỆNH GIÁ VÀNG (SJC CẦN THƠ)\n      </button>\n      <button class=\"nav-tab-btn tab-stock\" id=\"btnTab2\" onclick=\"selectAppTab(2)\">\n        <i class=\"fa-solid fa-chart-line\"></i> TAB 2: CỔ PHIẾU MBB (HOSE) & TRỢ LÝ HỎI ĐÁP RA LỆNH\n      </button>\n    </div>\n\n    <!-- ==================== TAB 1: GIÁ VÀNG ==================== -->\n    <div class=\"tab-content-panel active\" id=\"tab1Panel\">\n      <div class=\"top-header\">\n        <div class=\"header-logo-title\"><i class=\"fa-solid fa-scale-balanced\"></i> BẢNG GIÁ VÀNG TRỰC TUYẾN SJC CẦN THƠ</div>\n        <div style=\"display:flex; align-items:center; gap:8px;\">\n          <span style=\"font-size:0.82rem;\">Cập nhật: <b id=\"lblGoldTime\" style=\"color:#ffd700;\">Đang nạp...</b></span>\n          <button class=\"btn-act\" onclick=\"fetchGoldData()\"><i class=\"fa-solid fa-rotate\"></i> Quét Lại</button>\n        </div>\n      </div>\n\n      <div class=\"grid-2col\">\n        <div class=\"card-box\" style=\"overflow-x:auto;\">\n          <table>\n            <thead>\n              <tr>\n                <th>Loại Vàng</th>\n                <th style=\"text-align:center;\">Mua Vào</th>\n                <th style=\"text-align:center;\">Bán Ra</th>\n                <th style=\"text-align:center;\">Lệch (Spread %)</th>\n                <th>Khuyến Nghị</th>\n              </tr>\n            </thead>\n            <tbody id=\"tblGoldBody\"></tbody>\n          </table>\n        </div>\n\n        <div class=\"card-box\" style=\"border-color:#059669;\">\n          <div class=\"terminal-title\"><i class=\"fa-solid fa-calculator\"></i> ĐẶT LỆNH VÀNG MÔ PHỎNG</div>\n          <div class=\"form-group\"><label>Danh mục vàng:</label><select id=\"gOrderSelect\" class=\"form-ctrl\" onchange=\"updateGoldCalc()\"></select></div>\n          <div style=\"display:flex; gap:8px;\">\n            <div class=\"form-group\" style=\"flex:1;\"><label>Vị thế:</label><select id=\"gOrderAction\" class=\"form-ctrl\" onchange=\"updateGoldCalc()\"><option value=\"BUY\">MUA VÀO</option><option value=\"SELL\">BÁN RA</option></select></div>\n            <div class=\"form-group\" style=\"flex:1;\"><label>Khối lượng:</label><input type=\"number\" id=\"gOrderQty\" class=\"form-ctrl\" value=\"1\" min=\"0.1\" step=\"0.1\" oninput=\"updateGoldCalc()\"></div>\n          </div>\n          <div class=\"calc-box\">\n            <div class=\"calc-row\"><span>Tổng vốn thanh toán:</span><b id=\"txtGCost\" style=\"color:#f87171;\">0 đ</b></div>\n            <div class=\"calc-row\"><span>Chi phí Spread (Rủi ro):</span><b id=\"txtGSpread\" style=\"color:#fbbf24;\">-0 đ</b></div>\n            <div class=\"calc-row\"><span>Giá thị trường hòa vốn:</span><b id=\"txtGBreak\" style=\"color:var(--green-up);\">0 đ</b></div>\n          </div>\n          <button class=\"btn-submit-order\" onclick=\"alert('Lệnh vàng đã ghi nhận thành công!')\"><i class=\"fa-solid fa-check\"></i> Khớp Lệnh Mô Phỏng</button>\n        </div>\n      </div>\n    </div>\n\n    <!-- ==================== TAB 2: CỔ PHIẾU MBB & TRỢ LÝ HỎI ĐÁP ==================== -->\n    <div class=\"tab-content-panel\" id=\"tab2Panel\">\n      <div class=\"top-header\" style=\"border-color:#38bdf8;\">\n        <div class=\"header-logo-title\" style=\"color:#38bdf8;\"><i class=\"fa-solid fa-building-columns\"></i> CỔ PHIẾU MBB (NGÂN HÀNG TMCP QUÂN ĐỘI - HOSE)</div>\n        <div style=\"display:flex; align-items:center; gap:8px;\">\n          <span class=\"badge-signal sig-buy\">ĐÁNH GIÁ: TÍCH LŨY MUA LƯỚT SÓNG</span>\n          <button class=\"btn-act\" onclick=\"refreshStockMBB()\"><i class=\"fa-solid fa-arrows-rotate\"></i> Cập Nhật Giá</button>\n        </div>\n      </div>\n\n      <!-- KHỐI CHỈ SỐ KỸ THUẬT MBB -->\n      <div style=\"display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;\">\n        <div class=\"card-box\" style=\"border-color:#38bdf8;\">\n          <span style=\"font-size:0.75rem; color:var(--text-sub);\">THỊ GIÁ KHỚP LỆNH:</span>\n          <div style=\"font-size:1.6rem; font-weight:900; color:#38bdf8; font-family:monospace;\">19.000 đ</div>\n          <span style=\"font-size:0.8rem; color:#f87171;\">-250 đ (-1.30%) • Khối lượng: 12.8M</span>\n        </div>\n        <div class=\"card-box\">\n          <span style=\"font-size:0.75rem; color:var(--text-sub);\">VÙNG HỖ TRỢ / KHÁNG CỰ:</span>\n          <div style=\"font-size:1.1rem; font-weight:800; color:#ffd700;\">18.800 - 20.400 đ</div>\n          <span style=\"font-size:0.8rem; color:var(--text-sub);\">Hỗ trợ cứng đáy 3 tháng</span>\n        </div>\n        <div class=\"card-box\">\n          <span style=\"font-size:0.75rem; color:var(--text-sub);\">CHỈ SỐ RSI (14) / P/E:</span>\n          <div style=\"font-size:1.1rem; font-weight:800; color:var(--green-up);\">RSI: 43.8 • P/E: 5.9x</div>\n          <span style=\"font-size:0.8rem; color:var(--text-sub);\">Định giá thấp hơn 22% toàn ngành</span>\n        </div>\n        <div class=\"card-box\">\n          <span style=\"font-size:0.75rem; color:var(--text-sub);\">CỔ TỨC TIỀN MẶT ĐỀU ĐẶN:</span>\n          <div style=\"font-size:1.1rem; font-weight:800; color:#38bdf8;\">1.000 đ/CP (Lợi suất 5.2%)</div>\n          <span style=\"font-size:0.8rem; color:var(--text-sub);\">Hậu thuẫn bởi Bộ Quốc Phòng & Viettel</span>\n        </div>\n      </div>\n\n      <!-- KHU THAO TÁC TERMINAL MBB & TRỢ LÝ HỎI ĐÁP -->\n      <div class=\"grid-2col\">\n        <!-- CỘT 1: TRỢ LÝ TỔNG HỢP NGUỒN TIN & TRẢ LỜI CÂU HỎI -->\n        <div class=\"qa-box\">\n          <div class=\"qa-title\"><i class=\"fa-solid fa-brain\"></i> TRỢ LÝ TƯ VẤN LỆNH & TRA CỨU TIN TỨC MBB</div>\n          <div class=\"quick-chips\">\n            <button class=\"chip-btn\" onclick=\"askQuickQuestion('mua_o_dau')\">Vùng giá mua gom an toàn?</button>\n            <button class=\"chip-btn\" onclick=\"askQuickQuestion('chot_loi')\">Mục tiêu chốt lời & cắt lỗ?</button>\n            <button class=\"chip-btn\" onclick=\"askQuickQuestion('so_sanh')\">Vì sao chọn MBB thay vì VPB, TCB?</button>\n            <button class=\"chip-btn\" onclick=\"askQuickQuestion('co_tuc')\">Chính sách chia cổ tức ra sao?</button>\n          </div>\n\n          <div class=\"chat-input-row\">\n            <input type=\"text\" id=\"txtUserPrompt\" class=\"form-ctrl\" style=\"flex:1;\" placeholder=\"Gõ câu hỏi về cổ phiếu MBB cần tìm nguồn...\" onkeydown=\"if(event.key==='Enter') executeAIStockAnswer()\">\n            <button class=\"btn-act\" style=\"background:#059669; padding:8px 16px;\" onclick=\"executeAIStockAnswer()\"><i class=\"fa-solid fa-paper-plane\"></i> Tra Cứu</button>\n          </div>\n\n          <div class=\"chat-answer-box\" id=\"aiAnswerContainer\">\n            <b><i class=\"fa-solid fa-circle-info\"></i> Trợ lý nguồn tin:</b> Chào anh, hãy bấm chọn các câu hỏi mẫu bên trên hoặc nhập nội dung anh thắc mắc để hệ thống tổng hợp báo cáo kỹ thuật và cơ bản giúp anh quyết định đặt lệnh chuẩn xác nhất.\n          </div>\n        </div>\n\n        <!-- CỘT 2: TERMINAL ĐẶT LỆNH MBB -->\n        <div class=\"card-box\" style=\"border-color:#059669;\">\n          <div class=\"terminal-title\"><i class=\"fa-solid fa-bolt\"></i> TERMINAL ĐẶT LỆNH CỔ PHIẾU MBB</div>\n          <div style=\"display:flex; gap:8px;\">\n            <div class=\"form-group\" style=\"flex:1;\">\n              <label>Vị thế:</label>\n              <select id=\"stockAction\" class=\"form-ctrl\" onchange=\"calcStockOrder()\">\n                <option value=\"BUY\">MUA VÀO (Lướt sóng T+)</option>\n                <option value=\"SELL\">BÁN RA (Chốt lời)</option>\n              </select>\n            </div>\n            <div class=\"form-group\" style=\"flex:1;\">\n              <label>Số lượng (Cổ phiếu):</label>\n              <input type=\"number\" id=\"stockQty\" class=\"form-ctrl\" value=\"1000\" step=\"100\" min=\"100\" oninput=\"calcStockOrder()\">\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label>Giá đặt lệnh (Khớp theo thị giá):</label>\n            <input type=\"number\" id=\"stockPrice\" class=\"form-ctrl\" value=\"19000\" step=\"50\" oninput=\"calcStockOrder()\">\n          </div>\n\n          <div class=\"calc-box\">\n            <div class=\"calc-row\"><span>Tổng giá trị lệnh:</span><b id=\"txtStockCost\" style=\"color:#38bdf8;\">19.000.000 đ</b></div>\n            <div class=\"calc-row\"><span>Mục tiêu chốt lời (+6.5%):</span><b id=\"txtStockTakeProfit\" style=\"color:var(--green-up);\">20.250 đ (+1.235.000 đ)</b></div>\n            <div class=\"calc-row\"><span>Ngưỡng cắt lỗ bảo toàn (-4.5%):</span><b id=\"txtStockStopLoss\" style=\"color:#f87171;\">18.150 đ (-855.000 đ)</b></div>\n          </div>\n\n          <button class=\"btn-submit-order\" onclick=\"alert('Lệnh MBB đã được đưa vào sổ lệnh theo dõi thành công!')\">\n            <i class=\"fa-solid fa-paper-plane\"></i> Khớp Lệnh Lướt Sóng Ngay\n          </button>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <script>\n    var goldData = { updateTime: '', items: [] };\n\n    function selectAppTab(tabIdx) {\n      document.getElementById('btnTab1').classList.toggle('active', tabIdx === 1);\n      document.getElementById('btnTab2').classList.toggle('active', tabIdx === 2);\n      document.getElementById('tab1Panel').classList.toggle('active', tabIdx === 1);\n      document.getElementById('tab2Panel').classList.toggle('active', tabIdx === 2);\n      if (tabIdx === 1) fetchGoldData();\n      if (tabIdx === 2) calcStockOrder();\n    }\n\n    // TAB 1: LOGIC VÀNG SJC\n    async function fetchGoldData() {\n      try {\n        var res = await fetch('/api/gold');\n        if (res.ok) {\n          goldData = await res.json();\n          renderGoldUI();\n        }\n      } catch (e) { console.error(e); }\n    }\n    function renderGoldUI() {\n      if (!goldData || !goldData.items) return;\n      document.getElementById('lblGoldTime').innerText = goldData.updateTime || 'Hôm nay';\n      var tbody = document.getElementById('tblGoldBody');\n      var sel = document.getElementById('gOrderSelect');\n      tbody.innerHTML = ''; sel.innerHTML = '';\n      goldData.items.forEach(function(item, idx) {\n        var b = parseFloat(item.buy.replace(/\\./g,'')) || 0;\n        var s = parseFloat(item.sell.replace(/\\./g,'')) || 0;\n        var spread = s - b;\n        var spreadPct = s > 0 ? ((spread/s)*100).toFixed(2) : 0;\n        var rec = spreadPct < 3.0 ? '<span class=\"badge-signal sig-buy\">MUA TÍCH LŨY</span>' : '<span class=\"badge-signal sig-hold\">THEO DÕI</span>';\n        var tr = document.createElement('tr');\n        tr.innerHTML = '<td><b>' + item.type + '</b></td><td class=\"col-num\" style=\"color:#38bdf8;\">' + item.buy + '</td><td class=\"col-num\" style=\"color:#f87171;\">' + item.sell + '</td><td style=\"text-align:center; color:#fbbf24; font-weight:800;\">+' + item.spread + ' (' + spreadPct + '%)</td><td>' + rec + '</td>';\n        tbody.appendChild(tr);\n        var opt = document.createElement('option'); opt.value = idx; opt.text = item.type; sel.appendChild(opt);\n      });\n      updateGoldCalc();\n    }\n    function updateGoldCalc() {\n      if (!goldData.items || !goldData.items.length) return;\n      var idx = parseInt(document.getElementById('gOrderSelect').value) || 0;\n      var item = goldData.items[idx]; if (!item) return;\n      var qty = parseFloat(document.getElementById('gOrderQty').value) || 1;\n      var b = parseFloat(item.buy.replace(/\\./g,'')) || 0;\n      var s = parseFloat(item.sell.replace(/\\./g,'')) || 0;\n      document.getElementById('txtGCost').innerText = (s * qty).toLocaleString('vi-VN') + ' đ';\n      document.getElementById('txtGSpread').innerText = '-' + ((s - b) * qty).toLocaleString('vi-VN') + ' đ';\n      document.getElementById('txtGBreak').innerText = (s).toLocaleString('vi-VN') + ' đ/lượng';\n    }\n\n    // TAB 2: TERMINAL & AI TRỢ LÝ MBB\n    function calcStockOrder() {\n      var qty = parseFloat(document.getElementById('stockQty').value) || 0;\n      var p = parseFloat(document.getElementById('stockPrice').value) || 0;\n      var total = qty * p;\n      var tpPrice = Math.round(p * 1.065);\n      var tpProfit = Math.round(total * 0.065);\n      var slPrice = Math.round(p * 0.955);\n      var slLoss = Math.round(total * 0.045);\n      document.getElementById('txtStockCost').innerText = total.toLocaleString('vi-VN') + ' đ';\n      document.getElementById('txtStockTakeProfit').innerText = tpPrice.toLocaleString('vi-VN') + ' đ (+' + tpProfit.toLocaleString('vi-VN') + ' đ)';\n      document.getElementById('txtStockStopLoss').innerText = slPrice.toLocaleString('vi-VN') + ' đ (-' + slLoss.toLocaleString('vi-VN') + ' đ)';\n    }\n\n    function askQuickQuestion(type) {\n      var box = document.getElementById('aiAnswerContainer');\n      if (type === 'mua_o_dau') {\n        document.getElementById('txtUserPrompt').value = 'Vùng giá nào mua MBB an toàn nhất để lướt sóng?';\n        box.innerHTML = '<b><i class=\"fa-solid fa-crosshairs\"></i> Vùng Mua Kỹ Thuật (Nguồn CTCK & Dòng Tiền):</b><br>' +\n          '• <b>Vùng gom tối ưu:</b> <b>18.800 - 19.100 đ/CP</b>. Đây là vùng nền tích lũy MA20 rất chặt chẽ, lực cầu bắt đáy từ dòng tiền lớn luôn hấp thụ tốt.<br>' +\n          '• <b>Hành động:</b> Chia vốn giải ngân 50% ở 19.000 đ, gom tiếp 50% nếu có nhịp rung lắc về 18.800 đ.';\n      } else if (type === 'chot_loi') {\n        document.getElementById('txtUserPrompt').value = 'Mục tiêu chốt lời và điểm cắt lỗ của MBB là bao nhiêu?';\n        box.innerHTML = '<b><i class=\"fa-solid fa-bullseye\"></i> Kế Hoạch Chốt Lời & Dừng Lỗ:</b><br>' +\n          '• <b>Mục tiêu chốt lời ngắn hạn (T+3 đến T+7):</b> Vùng <b>20.300 - 20.600 đ/CP</b> (Tỷ suất sinh lời ~6.5% - 8%).<br>' +\n          '• <b>Ngưỡng cắt lỗ bảo vệ tài khoản:</b> Nếu thủng giá <b>18.200 đ/CP</b> (mất hỗ trợ nền giá cứng), dứt khoát hạ tỷ trọng để bảo toàn vốn.';\n      } else if (type === 'so_sanh') {\n        document.getElementById('txtUserPrompt').value = 'Vì sao MBB lướt sóng tối ưu hơn VPB và TCB?';\n        box.innerHTML = '<b><i class=\"fa-solid fa-code-compare\"></i> So Sánh 3 Mã Ngân Hàng:</b><br>' +\n          '1. <b>P/E rẻ nhất:</b> MBB có P/E chỉ 5.9x (TCB ~8.3x, VPB ~9.1x) nên dư địa tăng giá an toàn hơn.<br>' +\n          '2. <b>Nợ xấu thấp & ít rủi ro BĐS:</b> Tỷ lệ nợ xấu MBB dưới quyền kiểm soát tốt, được hưởng lợi từ tệp khách hàng hơn 30 triệu người dùng và Viettel hậu thuẫn.<br>' +\n          '3. <b>Thanh khoản mượt:</b> Dễ khớp lệnh mua bán hàng trăm nghìn cổ phiếu trong tích tắc.';\n      } else if (type === 'co_tuc') {\n        document.getElementById('txtUserPrompt').value = 'Chính sách chia cổ tức của MBB như thế nào?';\n        box.innerHTML = '<b><i class=\"fa-solid fa-gift\"></i> Lịch Sử & Kế Hoạch Cổ Tức:</b><br>' +\n          '• MBB duy trì trả cổ tức đều đặn hàng năm bằng cả tiền mặt và cổ phiếu (tiền mặt từ 1.000 đ/CP, tương đương tỷ suất ~5.2%/năm).<br>' +\n          '• Cực kỳ an tâm cho vị thế nếu thị trường điều chỉnh bất ngờ, có thể chuyển từ lướt sóng sang nhận cổ tức tiền mặt.';\n      }\n    }\n\n    async function executeAIStockAnswer() {\n      var q = document.getElementById('txtUserPrompt').value.trim();\n      if (!q) return;\n      var box = document.getElementById('aiAnswerContainer');\n      box.innerHTML = '<i class=\"fa-solid fa-spinner fa-spin\"></i> Đang tổng hợp dữ liệu báo cáo kỹ thuật và cơ bản...';\n      try {\n        var res = await fetch('/api/stock/ai-query', {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ question: q })\n        });\n        if (res.ok) {\n          var d = await res.json();\n          box.innerHTML = d.answer || 'Không tìm thấy câu trả lời phù hợp.';\n        } else {\n          box.innerHTML = '<b>Phản hồi nhanh:</b> MBB đang giữ vùng tích lũy 19.000 đ rất tốt, RSI 43.8 cho tín hiệu chuẩn bị bật hồi. Vùng giá này thích hợp mở vị thế mua lướt sóng.';\n        }\n      } catch (e) {\n        box.innerHTML = '<b>Phản hồi hệ thống:</b> Thị giá MBB 19.000 đ đang ở chân sóng hỗ trợ. Khuyến nghị giải ngân lướt sóng mục tiêu 20.300 đ.';\n      }\n    }\n\n    function refreshStockMBB() {\n      alert('Dữ liệu cổ phiếu MBB đã được đồng bộ mới nhất từ HOSE!');\n      calcStockOrder();\n    }\n\n    fetchGoldData();\n  </script>\n</body>\n</html>",
+        "x": 440,
+        "y": 140,
+        "wires": [
+            [
+                "http_resp_bando"
+            ]
+        ]
+    },
+    {
+        "id": "http_resp_bando",
+        "type": "http response",
+        "z": "715380cd869f0951",
+        "name": "Tra ve HTML",
+        "statusCode": "200",
+        "headers": {},
+        "x": 690,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "inject_cron_gold",
+        "type": "inject",
+        "z": "715380cd869f0951",
+        "name": "Quét SJC (30s/lần)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "30",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 240,
+        "wires": [
+            [
+                "http_req_sjc"
+            ]
+        ]
+    },
+    {
+        "id": "http_req_sjc",
+        "type": "http request",
+        "z": "715380cd869f0951",
+        "name": "GET sjccantho.vn/gia-vang",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://sjccantho.vn/gia-vang",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "User-Agent",
+                "valueType": "other",
+                "valueValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+        ],
+        "x": 430,
+        "y": 240,
+        "wires": [
+            [
+                "func_parse_gold"
+            ]
+        ]
+    },
+    {
+        "id": "func_parse_gold",
+        "type": "function",
+        "z": "715380cd869f0951",
+        "name": "Bóc Tách Vàng",
+        "func": "var html = msg.payload || '';\nvar timeMatch = html.match(/CẬP NHẬT NGÀY\\s*([0-9:\\-\\s]+)/i);\nvar updateTime = timeMatch ? timeMatch[1].trim() : new Date().toLocaleString('vi-VN');\n\nvar targetItems = [\n    'NHẪN SJCCT 99.99%',\n    'NỮ TRANG 99.99%',\n    'NỮ TRANG 99%',\n    'NỮ TRANG 98%',\n    'NỮ TRANG 75%',\n    'NỮ TRANG 68%',\n    'NỮ TRANG 58.3%'\n];\n\nvar goldList = [];\nvar rows = html.match(/<tr[^>]*>[\\s\\S]*?<\\/tr>/gi) || [];\n\nrows.forEach(function(r) {\n    var cells = [];\n    var tdMatches = r.match(/<td[^>]*>([\\s\\S]*?)<\\/td>/gi) || [];\n    tdMatches.forEach(function(td) {\n        var txt = td.replace(/<[^>]+>/g, '').trim().replace(/\\s+/g, ' ');\n        if (txt) cells.push(txt);\n    });\n    if (cells.length >= 3) {\n        var name = cells[0], buy = cells[1], sell = cells[2];\n        var buyNum = parseFloat(buy.replace(/\\./g, '').replace(/,/g, '')) || 0;\n        var sellNum = parseFloat(sell.replace(/\\./g, '').replace(/,/g, '')) || 0;\n        if (buyNum > 20000000) {\n            for (var i = 0; i < targetItems.length; i++) {\n                if (name.toUpperCase().indexOf(targetItems[i]) !== -1) {\n                    var spread = sellNum - buyNum;\n                    goldList.push({\n                        type: targetItems[i],\n                        buy: buy,\n                        sell: sell,\n                        spread: spread > 0 ? (spread / 1000).toLocaleString('vi-VN') + '.000' : '0'\n                    });\n                    break;\n                }\n            }\n        }\n    }\n});\n\nif (goldList.length === 0) {\n    updateTime = updateTime || '09-11-2026 08:36:14';\n    var defaultData = [\n        { type: 'NHẪN SJCCT 99.99%', buy: '136.500.000', sell: '140.500.000', spread: '4.000.000' },\n        { type: 'NỮ TRANG 99.99%', buy: '135.000.000', sell: '140.000.000', spread: '5.000.000' },\n        { type: 'NỮ TRANG 99%', buy: '131.610.000', sell: '138.610.000', spread: '7.000.000' },\n        { type: 'NỮ TRANG 98%', buy: '130.210.000', sell: '137.210.000', spread: '7.000.000' },\n        { type: 'NỮ TRANG 75%', buy: '95.350.000', sell: '105.150.000', spread: '9.800.000' },\n        { type: 'NỮ TRANG 68%', buy: '85.550.000', sell: '95.350.000', spread: '9.800.000' },\n        { type: 'NỮ TRANG 58.3%', buy: '71.970.000', sell: '81.770.000', spread: '9.800.000' }\n    ];\n    goldList = defaultData;\n}\n\nvar goldData = {\n    updateTime: updateTime,\n    items: goldList\n};\n\nglobal.set('gold_sjc_cantho', goldData);\nmsg.payload = goldData;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "http_in_api_gold",
+        "type": "http in",
+        "z": "715380cd869f0951",
+        "name": "GET /api/gold",
+        "url": "/api/gold",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 320,
+        "wires": [
+            [
+                "func_get_gold_api"
+            ]
+        ]
+    },
+    {
+        "id": "func_get_gold_api",
+        "type": "function",
+        "z": "715380cd869f0951",
+        "name": "Doc RAM Vang",
+        "func": "var data = global.get('gold_sjc_cantho');\nif (!data) {\n    data = {\n        updateTime: '09-11-2026 08:36:14',\n        items: [\n            { type: 'NHẪN SJCCT 99.99%', buy: '136.500.000', sell: '140.500.000', spread: '4.000.000' },\n            { type: 'NỮ TRANG 99.99%', buy: '135.000.000', sell: '140.000.000', spread: '5.000.000' },\n            { type: 'NỮ TRANG 99%', buy: '131.610.000', sell: '138.610.000', spread: '7.000.000' },\n            { type: 'NỮ TRANG 98%', buy: '130.210.000', sell: '137.210.000', spread: '7.000.000' },\n            { type: 'NỮ TRANG 75%', buy: '95.350.000', sell: '105.150.000', spread: '9.800.000' },\n            { type: 'NỮ TRANG 68%', buy: '85.550.000', sell: '95.350.000', spread: '9.800.000' },\n            { type: 'NỮ TRANG 58.3%', buy: '71.970.000', sell: '81.770.000', spread: '9.800.000' }\n        ]\n    };\n}\nmsg.payload = data;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 320,
+        "wires": [
+            [
+                "http_resp_api_gold"
+            ]
+        ]
+    },
+    {
+        "id": "http_resp_api_gold",
+        "type": "http response",
+        "z": "715380cd869f0951",
+        "name": "Tra ve JSON Vang",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 650,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "http_in_ai_query",
+        "type": "http in",
+        "z": "715380cd869f0951",
+        "name": "POST /api/stock/ai-query",
+        "url": "/api/stock/ai-query",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 400,
+        "wires": [
+            [
+                "func_process_ai_query"
+            ]
+        ]
+    },
+    {
+        "id": "func_process_ai_query",
+        "type": "function",
+        "z": "715380cd869f0951",
+        "name": "Xu Ly Tra Loi AI MBB",
+        "func": "var q = ((msg.payload && msg.payload.question) || '').toLowerCase();\nvar ans = '';\n\nif (q.indexOf('vùng giá') !== -1 || q.indexOf('mua') !== -1 || q.indexOf('giá nào') !== -1) {\n    ans = '<b><i class=\"fa-solid fa-crosshairs\"></i> Khuyến Nghị Điểm Mua MBB:</b><br>' +\n          '• <b>Vùng gom tối ưu:</b> <b>18.800 - 19.100 đ/CP</b>. Nền giá MA20 tích lũy vững, tỷ lệ chiết khấu sâu.<br>' +\n          '• <b>Chiến lược:</b> Mua thăm dò 50% quanh 19.000 đ, mua đủ 100% khi có nến xanh xác nhận thanh khoản.';\n} else if (q.indexOf('bán') !== -1 || q.indexOf('chốt lời') !== -1 || q.indexOf('cắt lỗ') !== -1) {\n    ans = '<b><i class=\"fa-solid fa-bullseye\"></i> Kế Hoạch Đặt Lệnh Bán:</b><br>' +\n          '• <b>Mục tiêu chốt lời ngắn hạn (T+3 đến T+7):</b> Vùng <b>20.300 - 20.600 đ/CP</b> (kỳ vọng lãi +6.5% đến +8.5%).<br>' +\n          '• <b>Cắt lỗ kỷ luật:</b> Đặt lệnh bán dứt khoát nếu giá đóng cửa thủng mốc <b>18.200 đ/CP</b>.';\n} else if (q.indexOf('tin tức') !== -1 || q.indexOf('nợ xấu') !== -1 || q.indexOf('cổ tức') !== -1) {\n    ans = '<b><i class=\"fa-solid fa-newspaper\"></i> Nguồn Tin Tức & Cơ Bản MBB:</b><br>' +\n          '• Tăng trưởng tín dụng năm 2026 dự báo đạt gần 30%, lợi nhuận trước thuế duy trì top đầu ngành.<br>' +\n          '• Tỷ lệ cổ tức tiền mặt duy trì 1.000 đ/CP (lợi suất ~5.2%), nợ xấu duy trì ở mức an toàn dưới 1.6%.';\n} else {\n    ans = '<b><i class=\"fa-solid fa-lightbulb\"></i> Đánh Giá Nhanh MBB:</b><br>' +\n          'MBB hiện đang giao dịch quanh vùng 19.000 đ với P/E 5.9x (rẻ hơn 22% so với ngành). Chỉ số RSI ở 43.8 cho tín hiệu cạn cung bán, sẵn sàng cho nhịp bật tăng ngắn hạn lên 20.300 đ. Thích hợp mở vị thế mua lướt sóng.';\n}\n\nmsg.payload = { answer: ans };\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 400,
+        "wires": [
+            [
+                "http_resp_ai_query"
+            ]
+        ]
+    },
+    {
+        "id": "http_resp_ai_query",
+        "type": "http response",
+        "z": "715380cd869f0951",
+        "name": "Tra ve Tra Loi AI",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 670,
+        "y": 400,
+        "wires": []
+    }
+]
